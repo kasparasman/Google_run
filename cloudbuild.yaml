@@ -1,0 +1,21 @@
+# cloudbuild.yaml
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'europe-central2-docker.pkg.dev/$PROJECT_ID/chatbot-repo/chatbot', '.']
+
+  # Push the image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'europe-central2-docker.pkg.dev/$PROJECT_ID/chatbot-repo/chatbot']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+    - 'run'
+    - 'deploy'
+    - 'chatbot-service'
+    - '--image'
+    - 'europe-central2-docker.pkg.dev/$PROJECT_ID/chatbot-repo/chatbot'
+    - '--region'
+    - 'europe-central2'
