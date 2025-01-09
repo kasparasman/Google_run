@@ -1,5 +1,2 @@
-Dockerfile
-voice.json
-.env
 .aws-sam
 template.yaml
