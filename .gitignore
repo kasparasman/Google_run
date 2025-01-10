@@ -1,2 +1,9 @@
 .aws-sam
 template.yaml
+openai_key.txt
+production_credentials.json
+elevenlabs_key.txt
+langchain_key.txt
+.env.template
+secret_key.txt
+voice_id.txt
