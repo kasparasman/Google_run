@@ -3,10 +3,12 @@ from routers import chat, speech
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-openai_key = os.getenv('OPENAI_API_KEY')
 
 
 app = FastAPI()

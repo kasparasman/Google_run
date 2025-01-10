@@ -4,6 +4,9 @@ from elevenlabs.client import ElevenLabs
 from .chatbot_logic import conversational_rag_chain
 import os
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
