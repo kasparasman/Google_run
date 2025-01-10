@@ -7,3 +7,5 @@ langchain_key.txt
 .env.template
 secret_key.txt
 voice_id.txt
+static
+templates
