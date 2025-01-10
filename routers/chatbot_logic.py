@@ -47,7 +47,7 @@ except Exception as e:
 logger.info("Initializing Chroma vectorstore")
 try:
     vectorstore = Chroma(
-        persist_directory='./vectorstore',
+        persist_directory='../vectorstore',
         embedding_function=embeddings
     )
     logger.debug("Chroma vectorstore initialized successfully")

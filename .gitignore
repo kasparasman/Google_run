@@ -6,3 +6,5 @@ langchain_key.txt
 secret_key.txt
 voice_id.txt
 secrets
+.env
+.venv
