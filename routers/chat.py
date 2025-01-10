@@ -8,10 +8,16 @@ import time
 router = APIRouter()
 
 # Move environment variables to main.py if you want to share them
-voice_id = os.getenv("VOICE_ID")
-elevenlabs_key = os.getenv("ELEVENLABS_API_KEY")
-
-
+REQUIRED_ENV_VARS = {
+    "VOICE_ID": os.getenv("VOICE_ID"),
+    "ELEVENLABS_API_KEY": os.getenv("ELEVENLABS_API_KEY"),
+    "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
+    "LANGCHAIN_API_KEY": os.getenv("LANGCHAIN_API_KEY")
+}
+for var_name, var_value in REQUIRED_ENV_VARS.items():
+    if not var_value:
+        logger.error(f"Missing required environment variable: {var_name}")
+        raise ValueError(f"Missing required environment variable: {var_name}")
 async def get_session_id(request: Request) -> str:
     try:
         data = await request.json()
@@ -47,10 +53,10 @@ async def chat_handler(request: Request, session_id: str = Depends(get_session_i
 
 @router.get("/tts")  # This becomes /chat/tts
 def tts_endpoint(textToSpeak: str = Query(...)):
-    client = ElevenLabs(api_key=elevenlabs_key)
+    client = ElevenLabs(api_key=REQUIRED_ENV_VARS["ELEVENLABS_API_KEY"])
     audio_stream = client.text_to_speech.convert_as_stream(
         text=textToSpeak,
-        voice_id=voice_id,
+        voice_id=REQUIRED_ENV_VARS["VOICE_ID"],
         model_id="eleven_flash_v2_5"
     )
     return StreamingResponse(audio_stream, media_type="audio/mpeg")

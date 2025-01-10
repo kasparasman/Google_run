@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from routers import chat, speech
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv()
 
 openai_key = os.getenv('OPENAI_API_KEY')
 
