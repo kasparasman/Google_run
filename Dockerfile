@@ -23,12 +23,6 @@ COPY --from=builder /app/requirements.txt .
 # Install wheels (dependencies)
 RUN pip install --no-cache-dir /wheels/*
 
-ENV LANGCHAIN_API_KEY="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"
-ENV OPENAI_API_KEY="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"
-ENV SECRET_KEY="4b850dafcbd64467e742effd987092f1cce3f5f06b11c04befa45f763eb23166"
-ENV ELEVENLABS_API_KEY="sk_a9680d7cbc98ccd67dc607ea34de269ffadf525369bbe239"
-ENV VOICE_ID="ultIypcv8jQiHOQCSlPH"
-
 # Create directory structure
 RUN mkdir -p /app/routers
 RUN mkdir -p /app/vectorstore

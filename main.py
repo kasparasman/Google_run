@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from routers import chat, speech
-from dotenv import load_dotenv
+import os
 from fastapi.middleware.cors import CORSMiddleware
 
-load_dotenv()
+openai_key = os.getenv('OPENAI_API_KEY')
+
 
 app = FastAPI()
 
@@ -14,10 +15,27 @@ app.add_middleware(
     allow_methods=["*"],    # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],    # Allow all headers
 )
+
 # Include all feature routers
 app.include_router(chat.router, prefix="/chat")
 app.include_router(speech.router, prefix="/speech")
 
+
+@app.get("/test-keys")
+async def test_keys():
+    keys_status = {
+        "LANGCHAIN_API_KEY": "✅ Found" if os.getenv("LANGCHAIN_API_KEY") else "❌ Missing",
+        "OPENAI_API_KEY": "✅ Found" if os.getenv("OPENAI_API_KEY") else "❌ Missing",
+        "SECRET_KEY": "✅ Found" if os.getenv("SECRET_KEY") else "❌ Missing",
+        "ELEVENLABS_API_KEY": "✅ Found" if os.getenv("ELEVENLABS_API_KEY") else "❌ Missing",
+        "VOICE_ID": "✅ Found" if os.getenv("VOICE_ID") else "❌ Missing"
+    }
+
+    # Add a summary count
+    found_count = sum(1 for status in keys_status.values() if "Found" in status)
+    keys_status["SUMMARY"] = f"{found_count}/5 keys found"
+
+    return keys_status
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
