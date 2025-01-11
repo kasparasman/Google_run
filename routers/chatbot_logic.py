@@ -1,3 +1,6 @@
+# --------------------------------------------------
+# chatbotlogic.py
+# --------------------------------------------------
 import os
 import uuid
 import asyncio
@@ -22,6 +25,9 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.output_parsers import StrOutputParser
 from dotenv import load_dotenv
 
+# Import our utility for cleaning environment variables
+from .env_utils import load_and_clean_env_var
+
 logger.info("Loading environment variables")
 load_dotenv()
 
@@ -31,20 +37,16 @@ os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = "default"
 
-# Check critical environment variables
-if not os.getenv("OPENAI_API_KEY"):
-    logger.error("OPENAI_API_KEY not found in environment variables!")
-else:
-    logger.debug("OPENAI_API_KEY found in environment")
+# Clean + load the OpenAI key
+OPENAI_API_KEY = load_and_clean_env_var("OPENAI_API_KEY")
 
 logger.info("Initializing OpenAI embeddings")
 try:
     emb_start = time.time()
-    embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
+    embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
     logger.debug("OpenAI embeddings initialized successfully")
     emb_end = time.time()
     logger.debug(f"[TIMING] Embeddings init took {emb_end - emb_start:.4f} seconds")
-
 except Exception as e:
     logger.error(f"Failed to initialize OpenAI embeddings: {e}", exc_info=True)
     raise
@@ -59,21 +61,26 @@ try:
     logger.debug("Chroma vectorstore initialized successfully")
     vcr_end = time.time()
     logger.debug(f"[TIMING] vectorstore init took {vcr_end - vcr_start:.4f} seconds")
-
 except Exception as e:
     logger.error(f"Failed to initialize Chroma vectorstore: {e}", exc_info=True)
     raise
 
 logger.info("Setting up LLM and retriever")
 try:
-    llm = ChatOpenAI(model_name="gpt-4", temperature=0)  # Fixed model name
+    # Use the cleaned key implicitly via environment if needed,
+    # or pass it explicitly to ChatOpenAI if it has openai_api_key param:
+    llm = ChatOpenAI(
+        model_name="gpt-4",
+        temperature=0,
+        openai_api_key=OPENAI_API_KEY  # if needed
+    )
     retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
     logger.debug("LLM and retriever setup complete")
 except Exception as e:
     logger.error(f"Failed to setup LLM or retriever: {e}", exc_info=True)
     raise
 
-### Contextualize question ###
+# Contextualize question
 logger.info("Setting up question contextualization")
 contextualize_q_system_prompt = (
     "Given a chat history and the latest user question which might reference context in the chat history, "
@@ -90,7 +97,7 @@ contextualize_q_prompt = ChatPromptTemplate.from_messages([
 logger.debug("Creating history aware retriever")
 history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
 
-### Answer question ###
+# QA chain
 logger.info("Setting up QA chain")
 system_prompt = (
     "You are an assistant for question-answering tasks about ZinZino health supplements. "
@@ -107,7 +114,7 @@ qa_prompt = ChatPromptTemplate.from_messages([
 question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
 rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
-### Statefully manage chat history ###
+# Statefully manage chat history
 logger.info("Initializing chat history store")
 store: Dict[str, ChatMessageHistory] = {}
 

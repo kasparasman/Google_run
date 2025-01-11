@@ -7,6 +7,7 @@ import logging
 import time
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+import base64
 
 # 1) Load env vars from .env (if present)
 load_dotenv()
