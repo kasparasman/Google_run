@@ -4,7 +4,7 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import logging
-
+import time
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -50,11 +50,12 @@ async def health_check():
 # 6) Debug route that returns full environment variables (no masking!)
 @app.get("/debug/env")
 async def debug_env():
-    """
-    WARNING: This route prints FULL secrets!
-    Use only in a non-production environment or for debugging.
-    """
+    key = os.getenv("OPENAI_API_KEY", "")
+    raw_bytes = key.encode("utf-8")
+    
     return {
+        "openai_key_base64": base64.b64encode(raw_bytes).decode("utf-8"),
+        "repr_of_key": repr(key),
         "LANGCHAIN_API_KEY": os.getenv("LANGCHAIN_API_KEY", ""),
         "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY", ""),
         "SECRET_KEY": os.getenv("SECRET_KEY", ""),
