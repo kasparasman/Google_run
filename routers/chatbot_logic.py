@@ -3,6 +3,7 @@ import uuid
 import asyncio
 import logging
 from typing import Dict, Any
+import time
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -38,19 +39,27 @@ else:
 
 logger.info("Initializing OpenAI embeddings")
 try:
+    emb_start = time.time()
     embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
     logger.debug("OpenAI embeddings initialized successfully")
+    emb_end = time.time()
+    logger.debug(f"[TIMING] Embeddings init took {emb_end - emb_start:.4f} seconds")
+
 except Exception as e:
     logger.error(f"Failed to initialize OpenAI embeddings: {e}", exc_info=True)
     raise
 
 logger.info("Initializing Chroma vectorstore")
 try:
+    vcr_start = time.time()
     vectorstore = Chroma(
         persist_directory='../vectorstore',
         embedding_function=embeddings
     )
     logger.debug("Chroma vectorstore initialized successfully")
+    vcr_end = time.time()
+    logger.debug(f"[TIMING] vectorstore init took {vcr_end - vcr_start:.4f} seconds")
+
 except Exception as e:
     logger.error(f"Failed to initialize Chroma vectorstore: {e}", exc_info=True)
     raise

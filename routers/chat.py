@@ -32,21 +32,32 @@ async def get_session_id(request: Request) -> str:
 @router.post("")  # This becomes /chat when mounted
 async def chat_handler(request: Request, session_id: str = Depends(get_session_id)):
     try:
+        start_time = time.time()
+        logger.debug(f"[TIMING] /chat: start={start_time:.4f}")
         data = await request.json()
         message = data.get("message", "")
 
         if not message:
             raise HTTPException(status_code=400, detail="No message provided.")
 
-        start_time = time.time()
+        chain_start = time.time()
+        logger.debug(f"[TIMING] chain_invoke_start: {chain_start:.4f}")
+
         response = conversational_rag_chain.invoke(
             {"input": message},
             {"configurable": {"session_id": session_id}}
         )
-        duration = time.time() - start_time
+        chain_end = time.time()
+        chain_duration = chain_end - chain_start
+        logger.debug(f"[TIMING] chain_invoke_end total={chain_duration:.4f}")
+
+
 
         answer = response.get("answer", "fail") if isinstance(response, dict) else "fail for else"
-        return {"response": answer, "response_time_seconds": duration}
+        end_time = time.time()
+        total_duration = end_time - start_time
+        logger.debug(f"[TIMING] /chat: end={end_time:.4f} (total={total_duration:.4f})")
+        return {"response": answer, "response_time_seconds": total_duration, "chain_time_seconds": chain_duration}
     except Exception as e:
         return JSONResponse(
             content={"error": str(e)},
